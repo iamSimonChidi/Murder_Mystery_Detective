@@ -1,0 +1,95 @@
+-- DETECTIVE SQL CHALLENGE
+
+-- Get the decription details from the crime scene report 
+SELECT description
+FROM crime_scene_report
+WHERE type = 'murder'
+AND city = 'SQL City'
+AND date = '20180115';
+
+-- Security footage shows that there were 2 witnesses. The first witness lives at the last house on "Northwestern Dr". 
+The second witness, named Annabel, lives somewhere on "Franklin Ave".
+
+--find the name of the first witness
+SELECT name, MAX(address_number)
+FROM person
+WHERE address_street_name = 'Northwestern Dr';
+
+--full details of the first witness
+SELECT *
+FROM person
+WHERE address_street_name = 'Northwestern Dr'
+AND address_number = '4919';
+
+--find the details about the second witness
+SELECT *
+FROM person
+WHERE address_street_name = 'Franklin Ave'
+And name LIKE 'Annabel%';
+
+/* The two witnesses from my investigation are:
+Morty Schapiro and Annabel Miller
+To proceed, i need to join two tables (person and interview)
+this is to enable me get the transcripts of the two witnesses.*/
+
+-- Eye witness report of Annabel Miller
+SELECT interview.transcript
+FROM person
+JOIN interview
+ON person.id=interview.person_id
+where name = 'Annabel Miller';
+
+-- I saw the murder happen, and I recognized the killer from my gym when I was working out last week on January the 9th.
+
+-- Eye witness report of Morty Schapiro
+
+SELECT interview.transcript
+FROM person
+JOIN interview
+ON person.id=interview.person_id
+where name = 'Morty Schapiro';
+
+-- I heard a gunshot and then saw a man run out. He had a "Get Fit Now Gym" bag. 
+The membership number on the bag started with "48Z". Only gold members have those bags. 
+The man got into a car with a plate that included "H42W".
+
+
+/* Details gathered from the two witnesses are as follows;
+1. The murder happened on the 9th of January, 2018
+2. The murderer is a member of the 'get fit now gym' with a Gold membership status.
+3. Has membership number starting with 48Z
+4. His plate number includes H42W */
+
+/* To get the correct identity of the murderer, it is necessary that I join the following tables as shown in the solution
+below. The tables are 1. get_fit_now_check_in	2. get_fit_now_member gm  3. person  4. drivers_license  */
+
+--Full Profile of the murderer
+
+SELECT *
+FROM get_fit_now_check_in AS gc
+JOIN get_fit_now_member AS gm
+ON gc.membership_id = gm.id
+JOIN person AS p
+ON gm.person_id = p.id
+JOIN drivers_license AS dl
+ON p.license_id = dl.id
+WHERE gc.membership_id LIKE '48Z%'
+AND gc.check_in_date = '20180109'
+AND gm.membership_status = 'gold'
+AND dl.plate_number LIKE '%H42W%';
+
+--What is the name of the murderer?
+SELECT gm.name
+FROM get_fit_now_check_in AS gc
+JOIN get_fit_now_member AS gm
+ON gc.membership_id = gm.id
+JOIN person AS p
+ON gm.person_id = p.id
+JOIN drivers_license AS dl
+ON p.license_id = dl.id
+WHERE gc.membership_id LIKE '48Z%'
+AND gc.check_in_date = '20180109'
+AND gm.membership_status = 'gold'
+AND dl.plate_number LIKE '%H42W%';
+
+-- The name of the murderer is Jeremy Bowers.
